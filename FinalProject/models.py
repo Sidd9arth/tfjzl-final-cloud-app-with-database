@@ -8,7 +8,6 @@ except Exception:
     sys.exit()
 
 from django.conf import settings
-import uuid
 
 
 class Instructor(models.Model):
@@ -33,7 +32,6 @@ class Learner(models.Model):
         (DATABASE_ADMIN, 'Database Admin')
     ]
     occupation = models.CharField(
-        null=False,
         max_length=20,
         choices=OCCUPATION_CHOICES,
         default=STUDENT
@@ -45,7 +43,7 @@ class Learner(models.Model):
 
 
 class Course(models.Model):
-    name = models.CharField(null=False, max_length=30, default='online course')
+    name = models.CharField(max_length=30, default='online course')
     image = models.ImageField(upload_to='course_images/')
     description = models.CharField(max_length=1000)
     pub_date = models.DateField(null=True)
@@ -84,7 +82,7 @@ class Enrollment(models.Model):
     rating = models.FloatField(default=5.0)
 
     def __str__(self):
-        return f"{self.user.username} enrolled in {self.course.name}"
+        return f"Enrollment {self.id} for {self.user.username} in {self.course.name}"
 
 
 class Question(models.Model):
@@ -97,13 +95,17 @@ class Question(models.Model):
     def __str__(self):
         return self.question_text
 
+    def is_get_score(self, selected_ids):
+        correct_ids = set(
+            self.choice_set.filter(is_correct=True).values_list('id', flat=True)
+        )
+        selected_question_ids = set(
+            self.choice_set.filter(id__in=selected_ids).values_list('id', flat=True)
+        )
+        return bool(correct_ids) and correct_ids == selected_question_ids
+
     def is_get_grade(self, selected_ids):
-        all_answers = self.choice_set.filter(is_correct=True).count()
-        selected_correct = self.choice_set.filter(
-            is_correct=True,
-            id__in=selected_ids
-        ).count()
-        return all_answers == selected_correct
+        return self.is_get_score(selected_ids)
 
 
 class Choice(models.Model):

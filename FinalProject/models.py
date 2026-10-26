@@ -90,7 +90,7 @@ class Question(models.Model):
     lessons = models.ManyToManyField(Lesson)
     question_text = models.CharField(max_length=500)
     question_point = models.IntegerField(default=1)
-    grade = models.IntegerField(default=50)
+grade = models.IntegerField(default=1)
 
     def __str__(self):
         return self.question_text

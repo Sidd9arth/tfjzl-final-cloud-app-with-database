@@ -1,13 +1,6 @@
-import sys
-from django.utils.timezone import now
-
-try:
-    from django.db import models
-except Exception:
-    print("There was an error loading django modules. Do you have django installed?")
-    sys.exit()
-
+from django.db import models
 from django.conf import settings
+from django.utils.timezone import now
 
 
 class Instructor(models.Model):
@@ -20,26 +13,24 @@ class Instructor(models.Model):
 
 
 class Learner(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     STUDENT = 'student'
     DEVELOPER = 'developer'
     DATA_SCIENTIST = 'data_scientist'
     DATABASE_ADMIN = 'dba'
+
     OCCUPATION_CHOICES = [
         (STUDENT, 'Student'),
         (DEVELOPER, 'Developer'),
         (DATA_SCIENTIST, 'Data Scientist'),
         (DATABASE_ADMIN, 'Database Admin')
     ]
-    occupation = models.CharField(
-        max_length=20,
-        choices=OCCUPATION_CHOICES,
-        default=STUDENT
-    )
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    occupation = models.CharField(max_length=20, choices=OCCUPATION_CHOICES, default=STUDENT)
     social_link = models.URLField(max_length=200)
 
     def __str__(self):
-        return self.user.username + "," + self.occupation
+        return f"{self.user.username},{self.occupation}"
 
 
 class Course(models.Model):
@@ -53,7 +44,7 @@ class Course(models.Model):
     is_enrolled = models.BooleanField(default=False)
 
     def __str__(self):
-        return "Name: " + self.name + ",Description: " + self.description
+        return f"Name: {self.name},Description: {self.description}"
 
 
 class Lesson(models.Model):
@@ -70,11 +61,13 @@ class Enrollment(models.Model):
     AUDIT = 'audit'
     HONOR = 'honor'
     BETA = 'BETA'
+
     COURSE_MODES = [
         (AUDIT, 'Audit'),
         (HONOR, 'Honor'),
         (BETA, 'BETA')
     ]
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     date_enrolled = models.DateField(default=now)
@@ -90,7 +83,7 @@ class Question(models.Model):
     lessons = models.ManyToManyField(Lesson)
     question_text = models.CharField(max_length=500)
     question_point = models.IntegerField(default=1)
-grade = models.IntegerField(default=1)
+    grade = models.IntegerField(default=1)
 
     def __str__(self):
         return self.question_text
@@ -110,7 +103,7 @@ grade = models.IntegerField(default=1)
 
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice_text = models.CharField(max_length=200)
+    choice_text = models.CharField(max_length=100)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
